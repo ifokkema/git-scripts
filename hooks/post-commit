@@ -1,0 +1,12 @@
+#!/bin/bash
+
+# Take commit message and add it to our list of commits, which will be collected by commit-report.
+
+FILEOUT="${HOME}/scripts/git/commits.log";
+PROJECT=`basename $(git rev-parse --show-toplevel)`;
+BRANCH=`git symbolic-ref HEAD 2> /dev/null | cut -d / -f 3-`;
+
+echo "Project: ${PROJECT}" >> $FILEOUT;
+echo "Branch: ${BRANCH}" >> $FILEOUT;
+git log -1 >> $FILEOUT;
+echo "" >> $FILEOUT;

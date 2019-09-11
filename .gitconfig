@@ -1,0 +1,9 @@
+[user]
+	name = Ivo Fokkema
+	email = i.f.a.c.fokkema@lumc.nl
+
+[push]
+	default = current
+
+[core]
+	hooksPath = /home/ifacfokkema/scripts/git/hooks/
