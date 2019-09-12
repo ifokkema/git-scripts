@@ -1,0 +1,329 @@
+#!/usr/bin/php
+<?php
+/*******************************************************************************
+ *
+ * COMMIT REPORTER
+ *
+ * Created     : 2019-09-02
+ * Modified    : 2019-09-06
+ * Version     : 0.1
+ *
+ * Purpose     : Formats commit messages into short LaTeX notes to be included
+ *               in the daily reports.
+ *
+ * Changelog   : 0.1    2019-09-02
+ *               Initial release.
+ *
+ * Programmer  : Ivo F.A.C. Fokkema <I.F.A.C.Fokkema@LUMC.nl>
+ *
+ *************/
+
+// Command line only.
+if (isset($_SERVER['HTTP_HOST'])) {
+    die('Please run this script through the command line.' . "\n");
+}
+
+// Default settings.
+$_CONFIG = array(
+    'name' => 'Commit reporter',
+    'version' => '0.1',
+);
+
+// Exit codes.
+// See http://tldp.org/LDP/abs/html/exitcodes.html for recommendations, in particular:
+// "[I propose] restricting user-defined exit codes to the range 64 - 113 (...), to conform with the C/C++ standard."
+define('EXIT_OK', 0);
+define('EXIT_WARNINGS_OCCURRED', 64);
+define('EXIT_ERROR_ARGS_INSUFFICIENT', 65);
+define('EXIT_ERROR_ARGS_NOT_UNDERSTOOD', 66);
+define('EXIT_ERROR_INPUT_NOT_A_FILE', 67);
+define('EXIT_ERROR_INPUT_UNREADABLE', 68);
+define('EXIT_ERROR_INPUT_CANT_OPEN', 69);
+define('EXIT_ERROR_CONNECTION_PROBLEM', 76);
+define('EXIT_ERROR_DATA_CONTENT_ERROR', 81);
+
+// PHP's array_key_last exists from PHP 7.3.0.
+if (!function_exists('array_key_last')) {
+    function array_key_last($a)
+    {
+        return array_keys($a)[count($a)-1];
+    }
+}
+
+
+
+
+
+// Parse command line options.
+$aArgs = $_SERVER['argv'];
+$nArgs = $_SERVER['argc'];
+// We accept one argument; the location of the git log.
+$nArgsRequired = 1;
+
+$sScriptName = array_shift($aArgs);
+$nArgs --;
+$nWarningsOccurred = 0;
+
+function usage ($sScriptName)
+{
+    // Displays the usage information.
+    global $_CONFIG;
+
+    print(
+        $_CONFIG['name'] . ' v' . $_CONFIG['version'] . '.' . "\n" .
+        'Usage: ' . $sScriptName . ' /path/to/commits.log' . "\n\n");
+}
+
+if ($nArgs < $nArgsRequired) {
+    // Not enough arguments.
+    usage($sScriptName);
+    die(EXIT_ERROR_ARGS_INSUFFICIENT);
+}
+
+$sCommitLogPath = '';
+if ($nArgs) {
+    $sCommitLogPath = array_shift($aArgs);
+    $nArgs --;
+}
+
+if ($nArgs) {
+    // More arguments sent.
+    usage($sScriptName);
+    die(EXIT_ERROR_ARGS_NOT_UNDERSTOOD);
+}
+
+// Check path.
+if (!file_exists($sCommitLogPath) || !is_file($sCommitLogPath)) {
+    print(
+        'Given commit log path does not exist or is not a file.' . "\n\n");
+    die(EXIT_ERROR_INPUT_NOT_A_FILE);
+}
+if (!is_readable($sCommitLogPath) || !is_writable($sCommitLogPath)) {
+    print(
+        'Permission denied trying to access given commit log path.' . "\n\n");
+    die(EXIT_ERROR_INPUT_UNREADABLE);
+}
+
+
+
+// This script used to collect the commit messages itself.
+// That is not useful either we'll run this each time for one commit (and we'll end up getting lots of emails),
+//  or we'll have to remember that we need to run it after a few commits.
+// Now, commit messages are logged using a git hook, and we're collecting them once per day.
+// Disabled this code completely, but leaving it for future reference.
+// In case we'll ever do more fancy stuff, we might still want this around for something.
+
+//// Find git root dir.
+//$sRoot = './';
+//while (!file_exists($sRoot . '.git')) {
+//    $sRoot = '../' . $sRoot;
+//    if (strlen($sRoot) > 100) {
+//        $sRoot = false;
+//        break;
+//    }
+//}
+
+//if (!$sRoot) {
+//    print(
+//        'Unable to find git root directory.' . "\n\n");
+//    die(EXIT_ERROR_INPUT_CANT_OPEN);
+//}
+
+
+
+//// Get project name, and branch name.
+//// NOTE: You can get some info as well through `git rev-parse --absolute-git-dir --show-toplevel`.
+//$sProject = basename(
+//    preg_replace('/\/[^\/]+\/\.\.\//', '/', // Remove 'dir/../'.
+//    preg_replace('/\/\.\//', '/', // Remove './'.
+//    preg_replace('/\/+/', '/', // Remove double slashes.
+//    getcwd() . '/' . $sRoot))));
+
+//// Current branch.
+//$sBranch = exec('git symbolic-ref HEAD 2> /dev/null | cut -d / -f 3-');
+//if (!$sBranch) {
+//    // Fatal error. Not a git repo?
+//    print(
+//        'Unable to get branch information from git.' . "\n\n");
+//    die(EXIT_ERROR_INPUT_UNREADABLE);
+//}
+
+
+
+//// Get the commit text.
+//@exec('git log -' . $nCommits . ' 2> /dev/null', $aOutput, $nReturn);
+//if ($nReturn !== 0) {
+//    // Fatal error. Not a git repo?
+//    print(
+//        'Unable to get commit information from git.' . "\n\n");
+//    die(EXIT_ERROR_INPUT_UNREADABLE);
+//}
+
+//if (!$aOutput) {
+//    // Still not. Bail out quietly.
+//    die(EXIT_ERROR_DATA_CONTENT_ERROR);
+//}
+
+
+
+// NOTE: All this locking seems rather useless, I couldn't get it to ever prevent altering the file.
+// Open commit log, and lock it (as we'll truncate it later).
+$f = fopen($sCommitLogPath, 'r+');
+$bLocked = false;
+if ($f) {
+    // Try to lock it, and keep trying for 10 seconds or so.
+    $i = 0;
+    while (!$bLocked && $i < 10) {
+        // The |LOCK_NB part makes sure that the script doesn't freeze while waiting for the file lock.
+        if (flock($f, LOCK_EX|LOCK_NB)) {
+            // We got the lock!
+            $bLocked = true;
+        } else {
+            // Failed, something else locked the file. Wait.
+            $i ++;
+            sleep(1);
+        }
+    }
+}
+
+if (!$bLocked) {
+    // Either we couldn't open the file, or we couldn't lock it.
+    print(
+        'Unable to obtain lock on commits log.');
+    die(EXIT_ERROR_INPUT_CANT_OPEN);
+}
+
+
+
+
+
+// Loop through the commits, and store them.
+$aCommits = array(); // Array where we'll store the parsed Commit data.
+$sProject = $sBranch = $sCommitID = $sDate = '';
+$d = $nCounter = 0;
+while ($sLine = fgets($f)) {
+    if (!trim($sLine)) {
+        // Ignore empty lines.
+        continue;
+    }
+    $sFirstWord = strstr($sLine, ' ', true);
+    switch ($sFirstWord) {
+        case 'Counter:':
+            // For fun, a counter that numbers commits.
+            $nCounter = trim(substr($sLine, strpos($sLine, ':')+1));
+            break;
+        case 'Project:':
+            $sProject = trim(substr($sLine, strpos($sLine, ':')+1));
+            // Reset all variables.
+            $sBranch = $sCommitID = $sDate = '';
+            $d = 0;
+            break;
+        case 'Branch:':
+            $sBranch = trim(substr($sLine, strpos($sLine, ':')+1));
+            break;
+        case 'commit':
+            $sCommitID = trim(strstr($sLine, ' '));
+            break;
+        case 'Date:':
+            // Parse date.
+            $d = strtotime(trim(strstr($sLine, ' ')));
+            $sDate = date('Y-m-d', $d);
+            break;
+        default:
+            // Commit body?
+            if ($sProject && $sBranch && $sCommitID && $d) {
+                // Group commits on date.
+                if (!isset($aCommits[$sDate])) {
+                    $aCommits[$sDate] = array();
+                }
+                if (!isset($aCommits[$sDate][$d])) {
+                    $aCommits[$sDate][$d] = array(
+                        'project' => $sProject,
+                        'branch' => $sBranch,
+                        'id' => $sCommitID,
+                        'body' => '',
+                    );
+                }
+
+                // Trim the newline off, we need to see if there is a dot there or not.
+                $sLine = rtrim($sLine);
+                // Remove 1st whitespace character from the line, and store.
+                $aCommits[$sDate][$d]['body'] .= preg_replace('/^\s/', '', $sLine) .
+                    (substr($sLine, -1) == '.'? '' : '.') . // Add a period at the end of each line.
+                    "\n"; // Add the whitespace again.
+
+            } else {
+                // Silently ignore unparsable lines (Author, Merge, ...).
+            }
+    }
+}
+
+
+
+
+
+ksort($aCommits); // Sort commits on date.
+foreach ($aCommits as $sDate => $aDailyCommits) {
+    ksort($aDailyCommits); // Sort the commits on time.
+    $d = array_key_last($aDailyCommits); // Get last commit, email wil be sent with that timestamp.
+
+    // Loop through commits, formatting them and emailing them.
+    // One email will be sent for all commits grouped per day.
+    $sEmailBody = '';
+    $aProjects = array(); // For the email subject.
+    $aCommitIDs = array(); // For the email subject.
+    foreach ($aDailyCommits as $aCommit) {
+        $nCounter ++;
+        $aProjects[] = $aCommit['project'] . ':' . $aCommit['branch'];
+        $aCommitIDs[] = substr($aCommit['id'], 0, 8); // Store the first 8 chars for the subject.
+        $sEmailBody .= '\\\\
+---\\texttt{ \\textbf{Commit {\tiny(\#' . str_pad($nCounter, 3, '0', STR_PAD_LEFT) . ')} ' . str_replace('_', '\_', $aCommit['project'] . ' ' . $aCommit['branch']) . '}}: % ' . $aCommit['id'] . '
+' .
+            str_replace(array('$', '_', '#'), array('\$', '\_', '\#'), // Prevent LaTeX errors by escaping troublesome chars.
+            preg_replace('/(\$[^ ,.]+|[^ ,.]+[\/][^ ,.]+|[^ ,.]+\.(php|txt|\(\)))/', '\\texttt{$1}', // quote variable, column, file and function names.
+            rtrim($aCommit['body']))); // and rtrim() the last additional newline off.
+    }
+
+    // Dump email contents in file.
+    do {
+        $sTempFile = uniqid();
+    } while (file_exists($sTempFile));
+
+    // FIXME: wordwrap doesn't work. No clue why. If I try to introduce indentation by changing the 3rd argument,
+    //  it starts wrapping at useless locations. No clue what it's trying to do.
+    file_put_contents($sTempFile, wordwrap($sEmailBody, 120, "\n"));
+
+    // Send the email.
+    sort($aProjects);
+    $sEmailAddress = (isset($_SERVER['USERNAME'])? $_SERVER['USERNAME'] : (isset($_SERVER['LOGNAME'])? $_SERVER['LOGNAME'] : false));
+    if (!$sEmailAddress) {
+        print(
+            'Unable to find email address to email to.' . "\n\n");
+        die(EXIT_ERROR_CONNECTION_PROBLEM);
+    }
+    @exec('mutt' .
+        ' -i ' . escapeshellarg($sTempFile) . // The email body.
+        ' -e "my_hdr Date: ' . date('r', $d) . '"' . // Change the date of sending to the last commit.
+        ' -s "Commits ' . implode(', ', array_unique($aProjects)) . ' (' . implode(', ', $aCommitIDs) . ')"' . // Build the subject.
+        ' -- ' . $_SERVER['LOGNAME'] . // Send it to the current user.
+        ' < /dev/null', $aOutput, $nReturn); // Force mutt to be non-interactive by piping /dev/null into the program.
+    unlink($sTempFile); // Remove the temp file.
+    if ($nReturn !== 0) {
+        print(
+            'Unable to send email with commit information.' . "\n\n");
+        flock($f, LOCK_UN); // Release the file lock.
+        die(EXIT_ERROR_CONNECTION_PROBLEM);
+    }
+}
+
+
+
+
+
+// Completed successfully. Empty file and release.
+ftruncate($f, 0);
+rewind($f); // Put file pointer back.
+fwrite($f, 'Counter: ' . $nCounter . "\n"); // Write counter to file for next time.
+flock($f, LOCK_UN); // Release the file lock.
+fclose($f);
+?>
