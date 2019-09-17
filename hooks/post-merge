@@ -1,0 +1,16 @@
+#!/bin/bash
+
+# This is run after a merge (which also happens after a pull merges locally).
+# We're looking for remote merges to include in our commit log.
+
+FILEOUT="${HOME}/scripts/git/commits.log";
+PROJECT=`basename $(git rev-parse --show-toplevel)`;
+BRANCH=`git symbolic-ref HEAD 2> /dev/null | cut -d / -f 3-`;
+
+if [ `git log -1 | grep ^Merge | wc -l` == "1" ];
+then
+  echo "Project: ${PROJECT}" >> $FILEOUT;
+  echo "Branch: ${BRANCH}" >> $FILEOUT;
+  git log -1 | grep -vE "^(Author|Merge):" >> $FILEOUT;
+  echo "" >> $FILEOUT;
+fi
