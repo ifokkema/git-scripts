@@ -5,13 +5,17 @@
  * COMMIT REPORTER
  *
  * Created     : 2019-09-02
- * Modified    : 2019-09-06
- * Version     : 0.1
+ * Modified    : 2019-09-12
+ * Version     : 0.2
  *
  * Purpose     : Formats commit messages into short LaTeX notes to be included
  *               in the daily reports.
  *
- * Changelog   : 0.1    2019-09-02
+ * Changelog   : 0.2    2019-09-12
+ *               Script will now no longer truncate the commit log. Instead, it
+ *               will simply append the new counter. Logically, it will now
+ *               ignore commits listed before the last counter.
+ *               0.1    2019-09-02
  *               Initial release.
  *
  * Programmer  : Ivo F.A.C. Fokkema <I.F.A.C.Fokkema@LUMC.nl>
@@ -26,7 +30,7 @@ if (isset($_SERVER['HTTP_HOST'])) {
 // Default settings.
 $_CONFIG = array(
     'name' => 'Commit reporter',
-    'version' => '0.1',
+    'version' => '0.2',
 );
 
 // Exit codes.
@@ -167,8 +171,8 @@ if (!is_readable($sCommitLogPath) || !is_writable($sCommitLogPath)) {
 
 
 // NOTE: All this locking seems rather useless, I couldn't get it to ever prevent altering the file.
-// Open commit log, and lock it (as we'll truncate it later).
-$f = fopen($sCommitLogPath, 'r+');
+// Open commit log, and lock it (as we'll write to it later).
+$f = fopen($sCommitLogPath, 'a+');
 $bLocked = false;
 if ($f) {
     // Try to lock it, and keep trying for 10 seconds or so.
@@ -201,6 +205,7 @@ if (!$bLocked) {
 $aCommits = array(); // Array where we'll store the parsed Commit data.
 $sProject = $sBranch = $sCommitID = $sDate = '';
 $d = $nCounter = 0;
+rewind($f); // Set pointer to the beginning of the file for reading.
 while ($sLine = fgets($f)) {
     if (!trim($sLine)) {
         // Ignore empty lines.
@@ -211,12 +216,13 @@ while ($sLine = fgets($f)) {
         case 'Counter:':
             // For fun, a counter that numbers commits.
             $nCounter = trim(substr($sLine, strpos($sLine, ':')+1));
+            // Reset all variables.
+            $aCommits = array();
+            $sProject = $sBranch = $sCommitID = $sDate = '';
+            $d = 0;
             break;
         case 'Project:':
             $sProject = trim(substr($sLine, strpos($sLine, ':')+1));
-            // Reset all variables.
-            $sBranch = $sCommitID = $sDate = '';
-            $d = 0;
             break;
         case 'Branch:':
             $sBranch = trim(substr($sLine, strpos($sLine, ':')+1));
@@ -320,9 +326,7 @@ foreach ($aCommits as $sDate => $aDailyCommits) {
 
 
 
-// Completed successfully. Empty file and release.
-ftruncate($f, 0);
-rewind($f); // Put file pointer back.
+// Completed successfully. Append counter and release lock.
 fwrite($f, 'Counter: ' . $nCounter . "\n"); // Write counter to file for next time.
 flock($f, LOCK_UN); // Release the file lock.
 fclose($f);
