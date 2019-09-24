@@ -8,5 +8,5 @@ BRANCH=`git symbolic-ref HEAD 2> /dev/null | cut -d / -f 3-`;
 
 echo "Project: ${PROJECT}" >> $FILEOUT;
 echo "Branch: ${BRANCH}" >> $FILEOUT;
-git log -1 >> $FILEOUT;
+git log -1 | grep -vE "^(Author|Merge):" >> $FILEOUT;
 echo "" >> $FILEOUT;
