@@ -5,13 +5,15 @@
  * COMMIT REPORTER
  *
  * Created     : 2019-09-02
- * Modified    : 2019-09-12
- * Version     : 0.2
+ * Modified    : 2019-09-25
+ * Version     : 0.3
  *
  * Purpose     : Formats commit messages into short LaTeX notes to be included
  *               in the daily reports.
  *
- * Changelog   : 0.2    2019-09-12
+ * Changelog   : 0.3    2019-09-25
+ *               Minor fixes in the formatting of commits in the email.
+ *               0.2    2019-09-12
  *               Script will now no longer truncate the commit log. Instead, it
  *               will simply append the new counter. Logically, it will now
  *               ignore commits listed before the last counter.
@@ -30,7 +32,7 @@ if (isset($_SERVER['HTTP_HOST'])) {
 // Default settings.
 $_CONFIG = array(
     'name' => 'Commit reporter',
-    'version' => '0.2',
+    'version' => '0.3',
 );
 
 // Exit codes.
@@ -251,11 +253,12 @@ while ($sLine = fgets($f)) {
                     );
                 }
 
-                // Trim the newline off, we need to see if there is a dot there or not.
+                // Trim the newline off, we need to see if there is a period (dot) there or not.
                 $sLine = rtrim($sLine);
                 // Remove 1st whitespace character from the line, and store.
                 $aCommits[$sDate][$d]['body'] .= preg_replace('/^\s/', '', $sLine) .
-                    (substr($sLine, -1) == '.'? '' : '.') . // Add a period at the end of each line.
+                    // Add a period at the end of each line, if we don't already have punctuation.
+                    (in_array(substr($sLine, -1), array('.', '?', '!'))? '' : '.') .
                     "\n"; // Add the whitespace again.
 
             } else {
