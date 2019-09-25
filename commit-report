@@ -281,16 +281,18 @@ foreach ($aCommits as $sDate => $aDailyCommits) {
     $sEmailBody = '';
     $aProjects = array(); // For the email subject.
     $aCommitIDs = array(); // For the email subject.
+    $sPrevProject = '';    // When switching project, add additional space.
     foreach ($aDailyCommits as $aCommit) {
         $nCounter ++;
         $aProjects[] = $aCommit['project'] . ':' . $aCommit['branch'];
         $aCommitIDs[] = substr($aCommit['id'], 0, 8); // Store the first 8 chars for the subject.
-        $sEmailBody .= '\\\\
----\\texttt{ \\textbf{Commit {\tiny(\#' . str_pad($nCounter, 3, '0', STR_PAD_LEFT) . ')} ' . str_replace('_', '\_', $aCommit['project'] . ' ' . $aCommit['branch']) . '}}: % ' . $aCommit['id'] . '
-' .
+        $sEmailBody .=
+            ($sPrevProject != $aCommit['project']? (!$sEmailBody? '' : "\n\n") : '\\\\' . "\n") .
+            '---\\texttt{ \\textbf{Commit {\tiny(\#' . str_pad($nCounter, 3, '0', STR_PAD_LEFT) . ')} ' . str_replace('_', '\_', $aCommit['project'] . ' ' . $aCommit['branch']) . '}}: % ' . $aCommit['id'] . "\n" .
             str_replace(array('$', '_', '#'), array('\$', '\_', '\#'), // Prevent LaTeX errors by escaping troublesome chars.
             preg_replace('/(\$[^ ,.]+|[^ ,.]+[\/][^ ,.]+|[^ ,.]+\.(php|txt|\(\)))/', '\\texttt{$1}', // quote variable, column, file and function names.
             rtrim($aCommit['body']))); // and rtrim() the last additional newline off.
+        $sPrevProject = $aCommit['project'];
     }
 
     // Dump email contents in file.
