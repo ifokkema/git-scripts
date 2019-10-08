@@ -290,7 +290,8 @@ foreach ($aCommits as $sDate => $aDailyCommits) {
             ($sPrevProject != $aCommit['project']? (!$sEmailBody? '' : "\n\n") : '\\\\' . "\n") .
             '---\\texttt{ \\textbf{Commit {\tiny(\#' . str_pad($nCounter, 3, '0', STR_PAD_LEFT) . ')} ' . str_replace('_', '\_', $aCommit['project'] . ' ' . $aCommit['branch']) . '}}: % ' . $aCommit['id'] . "\n" .
             str_replace(array('$', '_', '#'), array('\$', '\_', '\#'), // Prevent LaTeX errors by escaping troublesome chars.
-            preg_replace('/(\$[^ ,.]+|[^ ,.]+(\.php|\.txt|\(\))|[^ ,.]+[\/_][^ ,.]+)/', '\\texttt{$1}', // quote variable, column, file and function names.
+            // quote variable names, file names, function names, branch names, and custom column names.
+            preg_replace('/(\$[^ ,.]+|[^ ,.]+(\.php|\.txt|\(\))|\'(plus|master|[a-z]+\/[^\']+)\'|[^ ,.]+[\/_][^ ,.]+)/', '\\texttt{$1}',
             rtrim($aCommit['body']))); // and rtrim() the last additional newline off.
         $sPrevProject = $aCommit['project'];
     }
