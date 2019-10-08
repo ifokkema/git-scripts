@@ -301,8 +301,8 @@ foreach ($aCommits as $sDate => $aDailyCommits) {
         $sTempFile = uniqid();
     } while (file_exists($sTempFile));
 
-    // FIXME: wordwrap doesn't work. No clue why. If I try to introduce indentation by changing the 3rd argument,
-    //  it starts wrapping at useless locations. No clue what it's trying to do.
+    // FIXME: wordwrap behaves strangely. If I want to increase the indentation by adding spaces to the 3rd argument,
+    //  it starts wrapping at strange locations. Too early, or too late. No clue what it's trying to do.
     file_put_contents($sTempFile, wordwrap($sEmailBody, 120, "\n"));
 
     // Send the email.
@@ -333,7 +333,10 @@ foreach ($aCommits as $sDate => $aDailyCommits) {
 
 
 // Completed successfully. Append counter and release lock.
-fwrite($f, 'Counter: ' . $nCounter . "\n"); // Write counter to file for next time.
+if (!$nCounter || $aCommits) {
+    // Append the counter only when we actually had something to do (empty file or commits to handle).
+    fwrite($f, 'Counter: ' . $nCounter . "\n"); // Write counter to file for next time.
+}
 flock($f, LOCK_UN); // Release the file lock.
 fclose($f);
 ?>
