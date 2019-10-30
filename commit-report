@@ -5,8 +5,8 @@
  * COMMIT REPORTER
  *
  * Created     : 2019-09-02
- * Modified    : 2019-10-08
- * Version     : 0.3
+ * Modified    : 2019-10-30
+ * Version     : 0.3.1
  *
  * Purpose     : Formats commit messages into short LaTeX notes to be included
  *               in the daily reports.
@@ -32,7 +32,7 @@ if (isset($_SERVER['HTTP_HOST'])) {
 // Default settings.
 $_CONFIG = array(
     'name' => 'Commit reporter',
-    'version' => '0.3',
+    'version' => '0.3.1',
 );
 
 // Exit codes.
@@ -290,9 +290,11 @@ foreach ($aCommits as $sDate => $aDailyCommits) {
             ($sPrevProject != $aCommit['project']? (!$sEmailBody? '' : "\n\n") : '\\\\' . "\n") .
             '---\\texttt{ \\textbf{Commit {\tiny(\#' . str_pad($nCounter, 3, '0', STR_PAD_LEFT) . ')} ' . str_replace('_', '\_', $aCommit['project'] . ' ' . $aCommit['branch']) . '}}: % ' . $aCommit['id'] . "\n" .
             str_replace(array('$', '_', '#'), array('\$', '\_', '\#'), // Prevent LaTeX errors by escaping troublesome chars.
-            // quote variable names, file names, function names, branch names, and custom column names.
+            // Also quote certain abbreviations.
+            preg_replace('/\b(NULL|SELECT|FROM|INNER JOIN|OUTER JOIN|WHERE|GROUP BY|HAVING|ORDER BY|LIMIT)\b/', '\\texttt{$1}',
+            // Quote variable names, file names, function names, branch names, and custom column names.
             preg_replace('/(\$[^ ,.]+|[^ ,.]+(\.php|\.txt|\(\))|\'(plus|master|[a-z]+\/[^\']+)\'|[^ ,.]+[\/_][^ ,.]+)/', '\\texttt{$1}',
-            rtrim($aCommit['body']))); // and rtrim() the last additional newline off.
+            rtrim($aCommit['body'])))); // and rtrim() the last additional newline off.
         $sPrevProject = $aCommit['project'];
     }
 
