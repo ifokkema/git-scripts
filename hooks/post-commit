@@ -5,7 +5,7 @@
 # Also, log the current commit hash so that when we pull in new commits, we know
 #  how much of it is new and should be logged, too, by the post-merge hook.
 
-FILEOUT="$(dirname `git rev-parse --git-dir`)/commits.log";
+FILEOUT="$(dirname "${0}")/../commits.log";
 PROJECT=`basename $(git rev-parse --show-toplevel)`;
 if [[ $PROJECT == 'etc' ]];
 then
@@ -21,7 +21,7 @@ git log -1 | grep -vE "^(Author|Merge):" >> $FILEOUT;
 echo "" >> $FILEOUT;
 
 # Store the commit hash, so that we know about the last local commits.
-STATUS="$(dirname `git rev-parse --git-dir`)/status.log";
+STATUS="$(dirname "${0}")/../status.log";
 cat $STATUS 2> /dev/null | grep -v "^${PROJECT} ${BRANCH} " > "${STATUS}.tmp";
 echo -n "${PROJECT} ${BRANCH} " >> "${STATUS}.tmp";
 git rev-parse HEAD >> "${STATUS}.tmp";
