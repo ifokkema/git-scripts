@@ -19,6 +19,9 @@ else
   COMMIT=`echo "${COMMIT}.."`;
 fi
 
+# Escape $BRANCH if needed.
+BRANCH=$(echo $BRANCH | sed 's/\//\\\//g');
+
 # Now go through last entries and log them all, normal commits or merge commits.
 git log --reverse $COMMIT | grep -vE "^(Author|Merge):" \
     | sed "s/^commit/Project: ${PROJECT}\nBranch: ${BRANCH}\ncommit/" \
