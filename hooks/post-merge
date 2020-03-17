@@ -3,14 +3,24 @@
 # This is run after a merge (which also happens after a pull merges locally).
 # We're looking for remote merges to include in our commit log.
 
-FILEOUT="${HOME}/scripts/git/commits.log";
+FILEOUT="$(dirname "${0}")/../commits.log";
 PROJECT=`basename $(git rev-parse --show-toplevel)`;
-BRANCH=`git symbolic-ref HEAD 2> /dev/null | cut -d / -f 3-`;
+BRANCH=`git symbolic-ref --short HEAD 2> /dev/null`;
 
-if [ `git log -1 | grep ^Merge | wc -l` == "1" ];
+# Check if we know what this project's last commit was.
+STATUS="$(dirname "${0}")/../status.log";
+COMMIT=`grep "^${PROJECT} ${BRANCH} " $STATUS | cut -d " " -f 3`;
+if [ "${COMMIT}" == "" ];
 then
-  echo "Project: ${PROJECT}" >> $FILEOUT;
-  echo "Branch: ${BRANCH}" >> $FILEOUT;
-  git log -1 | grep -vE "^(Author|Merge):" >> $FILEOUT;
-  echo "" >> $FILEOUT;
+  # We don't have a last commit. Assume we're just pulling in one new merge.
+  COMMIT="-1";
+else
+  # Add ".." to get git log to show all commits since the last one.
+  COMMIT=`echo "${COMMIT}.."`;
 fi
+
+# Now go through last entries and log them all, normal commits or merge commits.
+git log --reverse $COMMIT | grep -vE "^(Author|Merge):" \
+    | sed "s/^commit/Project: ${PROJECT}\nBranch: ${BRANCH}\ncommit/" \
+    >> $FILEOUT;
+echo "" >> $FILEOUT;
