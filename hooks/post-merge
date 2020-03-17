@@ -27,3 +27,9 @@ git log --reverse $COMMIT | grep -vE "^(Author|Merge):" \
     | sed "s/^commit/Project: ${PROJECT}\nBranch: ${BRANCH}\ncommit/" \
     >> $FILEOUT;
 echo "" >> $FILEOUT;
+
+# Store the commit hash, so that we won't repeat commits in the logs.
+cat $STATUS 2> /dev/null | grep -v "^${PROJECT} ${BRANCH} " > "${STATUS}.tmp";
+echo -n "${PROJECT} ${BRANCH} " >> "${STATUS}.tmp";
+git rev-parse HEAD >> "${STATUS}.tmp";
+mv "${STATUS}.tmp" $STATUS;
