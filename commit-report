@@ -294,7 +294,7 @@ foreach ($aCommits as $sDate => $aDailyCommits) {
                 'E(BUILDMISMATCH|INCONSISTENTLENGTH|INVALIDBOUNDARY|RANGE|REF|SIZETOOLARGE|SYNTAX|UNCERTAIN)|' .
                 'W(CORRECTED|POSITIONSLIMIT|POSITIONSSWAPPED|ROLLFORWARD))\b/', '\\texttt{$1}',
             // Quote variable names, file names, function names, branch names, and custom column names.
-            preg_replace('/(\$[^ ,.]+|[^ ,.]+(\.php|\.txt|\(\))|\'(plus|master|[a-z]+\/[^\']+)\'|[^ ,.]+[\/_][^ ,.]+)/', '\\texttt{$1}',
+            preg_replace('/(\$[^ ,.]+|[^ ,]+(\.json|\.php|\.txt|\.yml|\(\))|\'(plus|master|[a-z]+\/[^\']+)\'|[^ ,.]+[\/_][^ ,.]+)/', '\\texttt{$1}',
             rtrim($aCommit['body'])))); // and rtrim() the last additional newline off.
         $sPrevProject = $aCommit['project'];
     }
