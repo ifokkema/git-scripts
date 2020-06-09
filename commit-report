@@ -257,7 +257,7 @@ while ($sLine = fgets($f)) {
                 $sLine = rtrim($sLine);
                 $aCommits[$sDate][$d]['body'] .= $sLine .
                     // Add a period at the end of each line, if we don't already have punctuation.
-                    (in_array(substr($sLine, -1), array('.', '?', '!'))? '' : '.') .
+                    (in_array(substr($sLine, -1), array('.', '?', '!', ':', ';'))? '' : '.') .
                     "\n"; // Add the whitespace again.
 
             } else {
