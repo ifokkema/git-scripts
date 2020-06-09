@@ -5,8 +5,8 @@
  * COMMIT REPORTER
  *
  * Created     : 2019-09-02
- * Modified    : 2019-10-30
- * Version     : 0.3.1
+ * Modified    : 2020-06-05
+ * Version     : 0.3.2
  *
  * Purpose     : Formats commit messages into short LaTeX notes to be included
  *               in the daily reports.
@@ -255,8 +255,7 @@ while ($sLine = fgets($f)) {
 
                 // Trim the newline off, we need to see if there is a period (dot) there or not.
                 $sLine = rtrim($sLine);
-                // Remove 1st whitespace character from the line, and store.
-                $aCommits[$sDate][$d]['body'] .= preg_replace('/^\s/', '', $sLine) .
+                $aCommits[$sDate][$d]['body'] .= $sLine .
                     // Add a period at the end of each line, if we don't already have punctuation.
                     (in_array(substr($sLine, -1), array('.', '?', '!'))? '' : '.') .
                     "\n"; // Add the whitespace again.
