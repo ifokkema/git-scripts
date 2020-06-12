@@ -22,8 +22,33 @@ fi
 # Escape $BRANCH if needed.
 BRANCH_ESCAPED=$(echo $BRANCH | sed 's/\//\\\//g');
 
-# Now go through last entries and log them all, normal commits or merge commits.
-git log --reverse $COMMIT | grep -vE "^(Author|Merge):" \
+# Now go through last entries and collect them all, commits or merge commits.
+COMMITS=$(git log --reverse $COMMIT | grep -vE "^(Author|Merge):" \
+    | sed 's/^commit /commit\n/g');
+# Commits now have their hashes on new lines.
+# Remove commits that we already have in the commits.log.
+# This happens when we merge a branch that we have been working on ourselves.
+while (true);
+do
+  OLDEST_COMMIT=$(echo "${COMMITS}" | head -n 2 | tail -n 1);
+  if [ "$(grep -c "^commit ${OLDEST_COMMIT}" "${FILEOUT}")" != "0" ];
+  then
+    # Remove this commit.
+    # Let sed match the commit hash on line 2 until the next commit,
+    #  then replace everything (c\, escaped to c\\) with nothing.
+    COMMITS=$(echo "${COMMITS}" | sed -e "/${OLDEST_COMMIT}/,/commit/c\\");
+  else
+    break;
+  fi;
+done;
+
+# Now log them all. Paste "commit" lines back to their hash on the next line.
+# NOTE: Sed removes newlines before matching, so you can never replace newlines.
+#       This code lets sed read in the entire text first; then you can.
+# Label a, add line to pattern space, unless at last line, go back to label a.
+# Unfortunately, using this trick I can no longer use ^commit,
+#  so any line ending in "commit" is stuck to the next.
+echo "${COMMITS}" | sed ':a;N;$!ba;s/commit\n/commit /g' \
     | sed "s/^commit/Project: ${PROJECT}\nBranch: ${BRANCH_ESCAPED}\ncommit/" \
     >> $FILEOUT;
 echo "" >> $FILEOUT;
