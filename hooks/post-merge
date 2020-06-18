@@ -24,8 +24,10 @@ BRANCH_ESCAPED=$(echo $BRANCH | sed 's/\//\\\//g');
 
 # Now go through last entries and collect them all, commits or merge commits.
 COMMITS=$(git log --reverse $COMMIT | grep -vE "^(Author|Merge):" \
-    | sed 's/^commit /commit\n/g');
+    | sed 's/^commit /commit---\n/g');
 # Commits now have their hashes on new lines.
+# The "commit" lines have "---" appended to distinguish
+#  them from the word "commit" in a commit message.
 # Remove commits that we already have in the commits.log.
 # This happens when we merge a branch that we have been working on ourselves.
 while (true);
@@ -36,7 +38,7 @@ do
     # Remove this commit.
     # Let sed match the commit hash on line 2 until the next commit,
     #  then replace everything (c\, escaped to c\\) with nothing.
-    COMMITS=$(echo "${COMMITS}" | sed -e "/${OLDEST_COMMIT}/,/commit/c\\");
+    COMMITS=$(echo "${COMMITS}" | sed -e "/${OLDEST_COMMIT}/,/commit---/c\\");
   else
     break;
   fi;
@@ -46,9 +48,7 @@ done;
 # NOTE: Sed removes newlines before matching, so you can never replace newlines.
 #       This code lets sed read in the entire text first; then you can.
 # Label a, add line to pattern space, unless at last line, go back to label a.
-# Unfortunately, using this trick I can no longer use ^commit,
-#  so any line ending in "commit" is stuck to the next.
-echo "${COMMITS}" | sed ':a;N;$!ba;s/commit\n/commit /g' \
+echo "${COMMITS}" | sed ':a;N;$!ba;s/commit---\n/commit /g' \
     | sed "s/^commit/Project: ${PROJECT}\nBranch: ${BRANCH_ESCAPED}\ncommit/" \
     >> $FILEOUT;
 echo "" >> $FILEOUT;
