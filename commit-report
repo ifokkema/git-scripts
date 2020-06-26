@@ -292,8 +292,9 @@ foreach ($aCommits as $sDate => $aDailyCommits) {
             str_replace(array('_', '#', '$', '%', '&'), array('\_', '\#', '\$', '\%', '\&'),
             // Also quote certain abbreviations.
             preg_replace('/\b(NULL|SELECT|FROM|INNER JOIN|OUTER JOIN|WHERE|GROUP BY|HAVING|ORDER BY|LIMIT|' .
-                'E(BUILDMISMATCH|INCONSISTENTLENGTH|INVALIDBOUNDARY|RANGE|REF|SIZETOOLARGE|SYNTAX|UNCERTAIN)|' .
-                'W(CORRECTED|POSITIONSLIMIT|POSITIONSSWAPPED|ROLLFORWARD))\b/', '\\texttt{$1}',
+                'ACTION|' .
+                'E(BUILDMISMATCH|FLAG|INCONSISTENTLENGTH|INVALIDBOUNDARY|RANGE|REF|SIZETOOLARGE|SYNTAX|UNCERTAIN)|' .
+                'W(CORRECTED|FLAG|GAP|POSITIONSLIMIT|POSITIONSSWAPPED|ROLLFORWARD))\b/', '\\texttt{$1}',
             // Quote variable names, file names, function names, branch names, and custom column names.
             preg_replace('/(\$[^ ,.]+|[^ ,]+(\.json|\.php|\.txt|\.yml|\(\))|\'(plus|master|[a-z]+\/[^\']+)\'|[^ ,.]+[\/_][^ ,.]+)/', '\\texttt{$1}',
             rtrim($aCommit['body'])))); // and rtrim() the last additional newline off.
