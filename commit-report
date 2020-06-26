@@ -288,7 +288,8 @@ foreach ($aCommits as $sDate => $aDailyCommits) {
         $sEmailBody .=
             ($sPrevProject != $aCommit['project']? (!$sEmailBody? '' : "\n\n") : '\\\\' . "\n") .
             '---\\texttt{ \\textbf{Commit {\tiny(\#' . str_pad($nCounter, 3, '0', STR_PAD_LEFT) . ')} ' . str_replace('_', '\_', $aCommit['project'] . ' ' . $aCommit['branch']) . '}}: % ' . $aCommit['id'] . "\n" .
-            str_replace(array('$', '_', '#'), array('\$', '\_', '\#'), // Prevent LaTeX errors by escaping troublesome chars.
+            // Prevent LaTeX errors by escaping troublesome chars.
+            str_replace(array('_', '#', '$', '%', '&'), array('\_', '\#', '\$', '\%', '\&'),
             // Also quote certain abbreviations.
             preg_replace('/\b(NULL|SELECT|FROM|INNER JOIN|OUTER JOIN|WHERE|GROUP BY|HAVING|ORDER BY|LIMIT|' .
                 'E(BUILDMISMATCH|INCONSISTENTLENGTH|INVALIDBOUNDARY|RANGE|REF|SIZETOOLARGE|SYNTAX|UNCERTAIN)|' .
