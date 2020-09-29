@@ -14,6 +14,11 @@ then
 fi;
 BRANCH=`git symbolic-ref --short HEAD 2> /dev/null`;
 
+if [ $BRANCH == "master" ];
+then
+    echo "!!!!!     WARNING: COMMITTING IN MASTER!     !!!!!";
+fi
+
 # Log the current commit in the commits.log file.
 echo "Project: ${PROJECT}" >> $FILEOUT;
 echo "Branch: ${BRANCH}" >> $FILEOUT;
