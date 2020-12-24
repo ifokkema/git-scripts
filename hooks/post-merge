@@ -5,6 +5,10 @@
 
 FILEOUT="$(dirname "${0}")/../commits.log";
 PROJECT=`basename $(git rev-parse --show-toplevel)`;
+if [[ $PROJECT == 'FortySecondsCV' ]];
+then
+    FILEOUT="$(dirname "${0}")/../commits.private.log";
+fi;
 BRANCH=`git symbolic-ref --short HEAD 2> /dev/null`;
 
 # Check if we know what this project's last commit was.

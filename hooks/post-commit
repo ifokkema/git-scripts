@@ -11,6 +11,9 @@ if [[ $PROJECT == 'etc' ]];
 then
     # This is the etckeeper project. Don't log this.
     exit 0;
+elif [[ $PROJECT == 'FortySecondsCV' ]];
+then
+    FILEOUT="$(dirname "${0}")/../commits.private.log";
 fi;
 BRANCH=`git symbolic-ref --short HEAD 2> /dev/null`;
 
