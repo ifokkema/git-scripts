@@ -29,6 +29,14 @@ BRANCH_ESCAPED=$(echo $BRANCH | sed 's/\//\\\//g');
 # Now go through last entries and collect them all, commits or merge commits.
 COMMITS=$(git log --reverse $COMMIT | grep -vE "^(Author|Merge):" \
     | sed 's/^commit /commit---\n/g');
+
+# To prevent an endless loop; if we have nothing to do because we already know
+#  all commits (this is possible), then quit here.
+if [ "$(echo -n "${COMMITS}" | wc -c)" == "0" ];
+then
+    exit 0;
+fi;
+
 # Commits now have their hashes on new lines.
 # The "commit" lines have "---" appended to distinguish
 #  them from the word "commit" in a commit message.
