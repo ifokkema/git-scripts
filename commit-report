@@ -5,13 +5,14 @@
  * COMMIT REPORTER
  *
  * Created     : 2019-09-02
- * Modified    : 2020-06-05
- * Version     : 0.3.2
+ * Modified    : 2021-01-01
+ * Version     : 0.3.3
  *
  * Purpose     : Formats commit messages into short LaTeX notes to be included
  *               in the daily reports.
  *
  * Changelog   : 0.3    2019-09-25
+ *               0.3.3  2021-01-01
  *               Minor fixes in the formatting of commits in the email.
  *               0.2    2019-09-12
  *               Script will now no longer truncate the commit log. Instead, it
@@ -32,7 +33,7 @@ if (isset($_SERVER['HTTP_HOST'])) {
 // Default settings.
 $_CONFIG = array(
     'name' => 'Commit reporter',
-    'version' => '0.3.1',
+    'version' => '0.3.3',
 );
 
 // Exit codes.
@@ -289,14 +290,14 @@ foreach ($aCommits as $sDate => $aDailyCommits) {
             ($sPrevProject != $aCommit['project']? (!$sEmailBody? '' : "\n\n") : '\\\\' . "\n") .
             '---\\texttt{ \\textbf{Commit {\tiny(\#' . str_pad($nCounter, 3, '0', STR_PAD_LEFT) . ')} ' . str_replace('_', '\_', $aCommit['project'] . ' ' . $aCommit['branch']) . '}}: % ' . $aCommit['id'] . "\n" .
             // Prevent LaTeX errors by escaping troublesome chars.
-            str_replace(array('_', '#', '$', '%', '&'), array('\_', '\#', '\$', '\%', '\&'),
+            str_replace(array('_', '#', '$', '%', '&', '^'), array('\_', '\#', '\$', '\%', '\&', '\^{}'),
             // Also quote certain abbreviations.
             preg_replace('/\b(NULL|SELECT|FROM|INNER JOIN|OUTER JOIN|WHERE|GROUP BY|HAVING|ORDER BY|LIMIT|' .
-                'ACTION|' .
+                'ACTION|GET|HEAD|POST|' .
                 'E(BUILDMISMATCH|FLAG|INCONSISTENTLENGTH|INVALIDBOUNDARY|RANGE|REF|SIZETOOLARGE|SYNTAX|UNCERTAIN)|' .
                 'W(CORRECTED|FLAG|GAP|POSITIONSLIMIT|POSITIONSSWAPPED|ROLLFORWARD))\b/', '\\texttt{$1}',
             // Quote variable names, file names, function names, branch names, and custom column names.
-            preg_replace('/(\$[^ ,.]+|[^ ,]+(\.json|\.php|\.txt|\.yml|\(\))|\'(plus|master|[a-z]+\/[^\']+)\'|[^ ,.]+[\/_][^ ,.]+)/', '\\texttt{$1}',
+            preg_replace('/(\$[^ ,.]+|[^ ,]+(\.json|\.php|\.png|\.txt|\.yml|\(\))|\'(plus|master|[a-z]+\/[^\']+)\'|[^ ,.]+[\/_][^ ,.]+)/', '\\texttt{$1}',
             rtrim($aCommit['body'])))); // and rtrim() the last additional newline off.
         $sPrevProject = $aCommit['project'];
     }
