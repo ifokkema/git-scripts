@@ -5,13 +5,18 @@
  * COMMIT REPORTER
  *
  * Created     : 2019-09-02
- * Modified    : 2021-01-01
- * Version     : 0.3.3
+ * Modified    : 2021-03-01
+ * Version     : 0.4.0
  *
  * Purpose     : Formats commit messages into short LaTeX notes to be included
  *               in the daily reports.
  *
- * Changelog   : 0.3    2019-09-25
+ * Changelog   : 0.4    2021-03-01
+ *               Fixed wrapping issues once and for all. Also fixed new problems
+ *               that started occurring with wrapping when we started to adhere
+ *               to better standards and our git editor started to wrap our
+ *               commit messages. Also added some additional words to escape.
+ *               0.3    2019-09-25
  *               0.3.3  2021-01-01
  *               Minor fixes in the formatting of commits in the email.
  *               0.2    2019-09-12
@@ -33,7 +38,7 @@ if (isset($_SERVER['HTTP_HOST'])) {
 // Default settings.
 $_CONFIG = array(
     'name' => 'Commit reporter',
-    'version' => '0.3.3',
+    'version' => '0.4.0',
 );
 
 // Exit codes.
@@ -255,11 +260,20 @@ while ($sLine = fgets($f)) {
                 }
 
                 // Trim the newline off, we need to see if there is a period (dot) there or not.
-                $sLine = rtrim($sLine);
-                $aCommits[$sDate][$d]['body'] .= $sLine .
-                    // Add a period at the end of each line, if we don't already have punctuation.
-                    (in_array(substr($sLine, -1), array('.', '?', '!', ':', ';'))? '' : '.') .
-                    "\n"; // Add the whitespace again.
+                $sLine = trim($sLine);
+                // Our commits are now wrapped by our editor already, so many
+                //  lines don't end with a period. Better check only for those
+                //  lines that never have a period - the lines we don't write.
+                if (((!$aCommits[$sDate][$d]['body'] && substr(ltrim($sLine), 0, 6) == 'Merge ') || substr(ltrim($aCommits[$sDate][$d]['body']), 0, 6) == 'Merge ')
+                    && !in_array(substr($sLine, -1), array('.', '?', '!', ':', ';'))) {
+                    $sLine .= ".\n";
+                } elseif (in_array(substr($sLine, -1), array('.', '?', '!', ':', ';'))) {
+                    $sLine .= "\n"; // Put whitespace back.
+                } else {
+                    // This is wrapping by the git editor, remove it.
+                    $sLine .= ' ';
+                }
+                $aCommits[$sDate][$d]['body'] .= $sLine;
 
             } else {
                 // Silently ignore unparsable lines (Author, Merge, ...).
@@ -292,7 +306,7 @@ foreach ($aCommits as $sDate => $aDailyCommits) {
             // Prevent LaTeX errors by escaping troublesome chars.
             str_replace(array('_', '#', '$', '%', '&', '^'), array('\_', '\#', '\$', '\%', '\&', '\^{}'),
             // Also quote certain abbreviations.
-            preg_replace('/\b(NULL|SELECT|FROM|INNER JOIN|OUTER JOIN|WHERE|GROUP BY|HAVING|ORDER BY|LIMIT|' .
+            preg_replace('/\b(NULL|SELECT|FROM|INNER JOIN|OUTER JOIN|WHERE|GROUP BY|HAVING|ORDER BY|LIMIT|SIGNED|UNSIGNED|FLOAT|TEXT|(TINY|SMALL|MEDIUM|BIG)?INT|' .
                 'ACTION|GET|HEAD|POST|' .
                 'E(BUILDMISMATCH|FLAG|INCONSISTENTLENGTH|INVALIDBOUNDARY|RANGE|REF|SIZETOOLARGE|SYNTAX|UNCERTAIN)|' .
                 'W(CORRECTED|FLAG|GAP|POSITIONSLIMIT|POSITIONSSWAPPED|ROLLFORWARD))\b/', '\\texttt{$1}',
@@ -307,9 +321,18 @@ foreach ($aCommits as $sDate => $aDailyCommits) {
         $sTempFile = uniqid();
     } while (file_exists($sTempFile));
 
-    // FIXME: wordwrap behaves strangely. If I want to increase the indentation by adding spaces to the 3rd argument,
-    //  it starts wrapping at strange locations. Too early, or too late. No clue what it's trying to do.
-    file_put_contents($sTempFile, wordwrap($sEmailBody, 120, "\n"));
+    // wordwrap() behaves strangely. If I want to increase the indentation by
+    //  adding spaces to the 3rd argument, it starts wrapping at strange
+    //  locations. Too early, or too late. No clue what it's trying to do.
+    // Now we hacked around this a bit by wrapping first, and indenting after.
+    file_put_contents($sTempFile,
+        str_replace(
+            "\n    ---",
+            "\n---",
+            str_replace(
+                "\n",
+                "\n    ",
+                wordwrap($sEmailBody, 116, "\n"))));
 
     // Send the email.
     sort($aProjects);
