@@ -5,7 +5,7 @@
  * COMMIT REPORTER
  *
  * Created     : 2019-09-02
- * Modified    : 2021-01-01
+ * Modified    : 2021-03-01
  * Version     : 0.3.3
  *
  * Purpose     : Formats commit messages into short LaTeX notes to be included
@@ -255,7 +255,7 @@ while ($sLine = fgets($f)) {
                 }
 
                 // Trim the newline off, we need to see if there is a period (dot) there or not.
-                $sLine = rtrim($sLine);
+                $sLine = trim($sLine);
                 $aCommits[$sDate][$d]['body'] .= $sLine .
                     // Add a period at the end of each line, if we don't already have punctuation.
                     (in_array(substr($sLine, -1), array('.', '?', '!', ':', ';'))? '' : '.') .
@@ -307,9 +307,18 @@ foreach ($aCommits as $sDate => $aDailyCommits) {
         $sTempFile = uniqid();
     } while (file_exists($sTempFile));
 
-    // FIXME: wordwrap behaves strangely. If I want to increase the indentation by adding spaces to the 3rd argument,
-    //  it starts wrapping at strange locations. Too early, or too late. No clue what it's trying to do.
-    file_put_contents($sTempFile, wordwrap($sEmailBody, 120, "\n"));
+    // wordwrap() behaves strangely. If I want to increase the indentation by
+    //  adding spaces to the 3rd argument, it starts wrapping at strange
+    //  locations. Too early, or too late. No clue what it's trying to do.
+    // Now we hacked around this a bit by wrapping first, and indenting after.
+    file_put_contents($sTempFile,
+        str_replace(
+            "\n    ---",
+            "\n---",
+            str_replace(
+                "\n",
+                "\n    ",
+                wordwrap($sEmailBody, 116, "\n"))));
 
     // Send the email.
     sort($aProjects);
