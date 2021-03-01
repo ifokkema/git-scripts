@@ -256,10 +256,19 @@ while ($sLine = fgets($f)) {
 
                 // Trim the newline off, we need to see if there is a period (dot) there or not.
                 $sLine = trim($sLine);
-                $aCommits[$sDate][$d]['body'] .= $sLine .
-                    // Add a period at the end of each line, if we don't already have punctuation.
-                    (in_array(substr($sLine, -1), array('.', '?', '!', ':', ';'))? '' : '.') .
-                    "\n"; // Add the whitespace again.
+                // Our commits are now wrapped by our editor already, so many
+                //  lines don't end with a period. Better check only for those
+                //  lines that never have a period - the lines we don't write.
+                if (((!$aCommits[$sDate][$d]['body'] && substr(ltrim($sLine), 0, 6) == 'Merge ') || substr(ltrim($aCommits[$sDate][$d]['body']), 0, 6) == 'Merge ')
+                    && !in_array(substr($sLine, -1), array('.', '?', '!', ':', ';'))) {
+                    $sLine .= ".\n";
+                } elseif (in_array(substr($sLine, -1), array('.', '?', '!', ':', ';'))) {
+                    $sLine .= "\n"; // Put whitespace back.
+                } else {
+                    // This is wrapping by the git editor, remove it.
+                    $sLine .= ' ';
+                }
+                $aCommits[$sDate][$d]['body'] .= $sLine;
 
             } else {
                 // Silently ignore unparsable lines (Author, Merge, ...).
