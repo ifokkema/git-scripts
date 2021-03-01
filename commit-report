@@ -6,12 +6,17 @@
  *
  * Created     : 2019-09-02
  * Modified    : 2021-03-01
- * Version     : 0.3.3
+ * Version     : 0.4.0
  *
  * Purpose     : Formats commit messages into short LaTeX notes to be included
  *               in the daily reports.
  *
- * Changelog   : 0.3    2019-09-25
+ * Changelog   : 0.4    2021-03-01
+ *               Fixed wrapping issues once and for all. Also fixed new problems
+ *               that started occurring with wrapping when we started to adhere
+ *               to better standards and our git editor started to wrap our
+ *               commit messages. Also added some additional words to escape.
+ *               0.3    2019-09-25
  *               0.3.3  2021-01-01
  *               Minor fixes in the formatting of commits in the email.
  *               0.2    2019-09-12
@@ -33,7 +38,7 @@ if (isset($_SERVER['HTTP_HOST'])) {
 // Default settings.
 $_CONFIG = array(
     'name' => 'Commit reporter',
-    'version' => '0.3.3',
+    'version' => '0.4.0',
 );
 
 // Exit codes.
@@ -301,7 +306,7 @@ foreach ($aCommits as $sDate => $aDailyCommits) {
             // Prevent LaTeX errors by escaping troublesome chars.
             str_replace(array('_', '#', '$', '%', '&', '^'), array('\_', '\#', '\$', '\%', '\&', '\^{}'),
             // Also quote certain abbreviations.
-            preg_replace('/\b(NULL|SELECT|FROM|INNER JOIN|OUTER JOIN|WHERE|GROUP BY|HAVING|ORDER BY|LIMIT|' .
+            preg_replace('/\b(NULL|SELECT|FROM|INNER JOIN|OUTER JOIN|WHERE|GROUP BY|HAVING|ORDER BY|LIMIT|SIGNED|UNSIGNED|FLOAT|TEXT|(TINY|SMALL|MEDIUM|BIG)?INT|' .
                 'ACTION|GET|HEAD|POST|' .
                 'E(BUILDMISMATCH|FLAG|INCONSISTENTLENGTH|INVALIDBOUNDARY|RANGE|REF|SIZETOOLARGE|SYNTAX|UNCERTAIN)|' .
                 'W(CORRECTED|FLAG|GAP|POSITIONSLIMIT|POSITIONSSWAPPED|ROLLFORWARD))\b/', '\\texttt{$1}',
