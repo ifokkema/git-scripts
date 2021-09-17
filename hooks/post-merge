@@ -4,8 +4,12 @@
 # We're looking for remote merges to include in our commit log.
 
 FILEOUT="$(dirname "${0}")/../commits.log";
-PROJECT=`basename $(git rev-parse --show-toplevel)`;
-if [[ $PROJECT == 'FortySecondsCV' ]];
+PROJECT=$(basename $(git rev-parse --show-toplevel));
+if [[ $PROJECT == 'etc' ]];
+then
+    # This is the etckeeper project. Don't log this.
+    exit 0;
+elif [[ $PROJECT == 'FortySecondsCV' ]];
 then
     FILEOUT="$(dirname "${0}")/../commits.private.log";
 fi;
