@@ -13,18 +13,18 @@ elif [[ $PROJECT == 'FortySecondsCV' || $PROJECT == 'epoxytips.nl' ]];
 then
     FILEOUT="$(dirname "${0}")/../commits.private.log";
 fi;
-BRANCH=`git symbolic-ref --short HEAD 2> /dev/null`;
+BRANCH=$(git symbolic-ref --short HEAD 2> /dev/null);
 
 # Check if we know what this project's last commit was.
 STATUS="$(dirname "${0}")/../status.log";
-COMMIT=`grep "^${PROJECT} ${BRANCH} " $STATUS | cut -d " " -f 3`;
+COMMIT=$(grep "^${PROJECT} ${BRANCH} " $STATUS | cut -d " " -f 3);
 if [ "${COMMIT}" == "" ];
 then
   # We don't have a last commit. Assume we're just pulling in one new merge.
   COMMIT="-1";
 else
   # Add ".." to get git log to show all commits since the last one.
-  COMMIT=`echo "${COMMIT}.."`;
+  COMMIT=$(echo "${COMMIT}..");
 fi
 
 # Escape $BRANCH if needed.

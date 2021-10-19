@@ -6,7 +6,7 @@
 #  how much of it is new and should be logged, too, by the post-merge hook.
 
 FILEOUT="$(dirname "${0}")/../commits.log";
-PROJECT=`basename $(git rev-parse --show-toplevel)`;
+PROJECT=$(basename $(git rev-parse --show-toplevel));
 if [[ $PROJECT == 'etc' ]];
 then
     # This is the etckeeper project. Don't log this.
@@ -15,7 +15,7 @@ elif [[ $PROJECT == 'FortySecondsCV' || $PROJECT == 'epoxytips.nl' ]];
 then
     FILEOUT="$(dirname "${0}")/../commits.private.log";
 fi;
-BRANCH=`git symbolic-ref --short HEAD 2> /dev/null`;
+BRANCH=$(git symbolic-ref --short HEAD 2> /dev/null);
 
 if [ $BRANCH == "master" ];
 then
