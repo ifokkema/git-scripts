@@ -60,6 +60,12 @@ do
   fi;
 done;
 
+# If we have absolutely nothing left, quit.
+if [ "${COMMITS}" == "commit---" ];
+then
+    exit 0;
+fi
+
 # Now log them all. Paste "commit" lines back to their hash on the next line.
 # NOTE: Sed removes newlines before matching, so you can never replace newlines.
 #       This code lets sed read in the entire text first; then you can.
