@@ -31,8 +31,16 @@ fi
 BRANCH_ESCAPED=$(echo $BRANCH | sed 's/\//\\\//g');
 
 # Now go through last entries and collect them all, commits or merge commits.
-COMMITS=$(git log --reverse $COMMIT | grep -vE "^(Author|Merge):" \
+COMMITS=$(git log --reverse $COMMIT | grep -vE "^Merge:" \
     | sed 's/^commit /commit---\n/g');
+
+# Remove commits not done by me.
+# Put all commits on one line each \
+# Find commits by me, put newlines back \
+# Remove Author lines.
+COMMITS=$(echo "${COMMITS}" | tr '\n' '\v' | sed 's/\vcommit---/\ncommit---/g' \
+    | grep -iE 'Author:.*Ivo.*Fokkema' | tr '\v' '\n' \
+    | grep -v '^Author');
 
 # To prevent an endless loop; if we have nothing to do because we already know
 #  all commits (this is possible), then quit here.
