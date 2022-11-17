@@ -17,7 +17,7 @@ then
 fi;
 BRANCH=$(git symbolic-ref --short HEAD 2> /dev/null);
 
-if [ $BRANCH == "master" ];
+if [[ $BRANCH == "master" || $BRANCH == "main" ]];
 then
     echo "--------------------------------------------------";
     echo "!!!!!     WARNING: COMMITTING IN MASTER!     !!!!!";
