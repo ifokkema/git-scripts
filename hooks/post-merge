@@ -39,7 +39,7 @@ COMMITS=$(git log --reverse $COMMIT | grep -vE "^Merge:" \
 # Find commits by me, put newlines back \
 # Remove Author lines.
 COMMITS=$(echo "${COMMITS}" | tr '\n' '\v' | sed 's/\vcommit---/\ncommit---/g' \
-    | grep -iE 'Author:.*Ivo.*Fokkema' | tr '\v' '\n' \
+    | grep -iE 'Author:.*Fokkema' | tr '\v' '\n' \
     | grep -v '^Author');
 
 # To prevent an endless loop; if we have nothing to do because we already know
