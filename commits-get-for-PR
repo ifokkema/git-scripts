@@ -1,0 +1,14 @@
+#!/bin/bash
+# Created  2024-01-26
+# Modified 2024-01-29
+
+MAIN=$(git branch | grep -E "^\s+(master|main)$" | awk '{print $1}');
+
+# Get the last commits since the main branch, and list them nicely.
+git log --no-merges --reverse "${MAIN}...HEAD" \
+    | grep -vE "^Author|Date" | sed -r 's/^commit.+/-/' | tr '\n' '\r' \
+    | sed -r 's/-\s+/- /g' | sed -r 's/\s{2,}/ /g' | sed 's/ - /\n- /g' \
+    | tr '\r' '\n';
+echo "";
+
+
