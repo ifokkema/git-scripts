@@ -1,0 +1,21 @@
+#!/bin/bash
+# Created  2024-01-16
+# Modified 2024-01-29
+
+# 2024-01-29
+# Move it to the git scripts repo, don't hardcode the scripts repo's name.
+
+# Add a comment to the commits log about a GitHub action,
+#  like the creation of a PR or issue, or the review of a PR.
+# This should solve the annoying case where I don't know how many commits I truly have.
+
+if [ $# -gt 0 ];
+then
+    branch="$*";
+else
+    branch="unknown activity";
+fi;
+
+DIR=$(dirname "$0");
+
+echo -e "Project: GitHub\nBranch: ${branch}\nDate:   $(date +"%a %b %-d %H:%M:%S %Y %z")\n" >> ${DIR}/commits.log;
