@@ -1,0 +1,57 @@
+#!/bin/bash
+# Created  2021-07-14
+# Modified 2024-01-29
+
+# Reports number of commits from the commits logs.
+# The previous version just use `git log` but that doesn't span different projects
+# and last week I messed up and made too many commits.
+# Now my stats are ugly :(
+
+# 2024-01-29
+# Move it to the git scripts repo, don't hardcode the scripts repo's name.
+
+# 2024-01-23
+# Fixed the fact that it wasn't counting the number of GH actions well.
+
+# 2023-01-02
+# Fixed date handling so that we'll be grepping for the year of the commit,
+#  not the current year.
+
+# 2022-08-30
+# Added a loop around this to show commits for the last few dates in the
+#  commit logs, because I'm often not committing as today.
+
+# This is a very, very elaborate way to get the most recent two dates from the
+#  different commit logs. We need to do this, because there could be an old
+#  commit log, and there we need to properly sort the dates.
+
+DIR=$(dirname $0);
+
+tail -n 1000 ${DIR}/commits*.log \
+  | grep "^Date:" | awk '{print $2, $3, $4, $6}' | uniq \
+  | while read -r DATE;
+    do
+      # Convert all dates to Y-M-D.
+      echo $(date -d "${DATE}" +%Y-%m-%d);
+    done | sort | uniq | tail -n 2 \
+    | while read -r DATE;
+      do
+        # Convert them back to something we can grep on.
+        echo $(date -d "${DATE}" +"%a %b %-d %Y");
+      done \
+      | while read -r DATE;
+        do 
+          echo "${DATE}";
+
+          tail -n 1000 ${DIR}/commits*.log \
+            | grep -B 3 -E "Date:\s+$(date -d "${DATE}" +"%a %b %-d") [0-9:]{8} $(date -d "${DATE}" +"%Y")" \
+            | grep -E "^(Project|Branch)" \
+            | tr '\n' ';' | sed 's/Project: //g' | sed 's/;Branch//g' | tr ';' '\n' \
+            | sort | uniq -c
+
+          tail -n 1000 ${DIR}/commits*.log \
+            | grep -E "^Date:\s+$(date -d "${DATE}" +"%a %b %-d") [0-9:]{8} $(date -d "${DATE}" +"%Y")" \
+            | sed -r 's/.+/--/' | sort | uniq -c
+
+          echo "";
+          done
