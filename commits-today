@@ -1,11 +1,15 @@
 #!/bin/bash
 # Created  2021-07-14
-# Modified 2024-01-29
+# Modified 2024-02-13
 
 # Reports number of commits from the commits logs.
 # The previous version just use `git log` but that doesn't span different projects
 # and last week I messed up and made too many commits.
 # Now my stats are ugly :(
+
+# 2024-02-13
+# Allow for a numeric argument that selects the number of days to show
+#  commits for. This is useful when I want to look further back.
 
 # 2024-01-29
 # Move it to the git scripts repo, don't hardcode the scripts repo's name.
@@ -27,13 +31,20 @@
 
 DIR=$(dirname $0);
 
+if [ $# -gt 0 ];
+then
+    COUNT=$1;
+else
+    COUNT=2;
+fi;
+
 tail -n 1000 ${DIR}/commits*.log \
   | grep "^Date:" | awk '{print $2, $3, $4, $6}' | uniq \
   | while read -r DATE;
     do
       # Convert all dates to Y-M-D.
       echo $(date -d "${DATE}" +%Y-%m-%d);
-    done | sort | uniq | tail -n 2 \
+    done | sort | uniq | tail -n $COUNT \
     | while read -r DATE;
       do
         # Convert them back to something we can grep on.
