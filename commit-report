@@ -14,7 +14,8 @@
  * Changelog   : 0.4.1  2024-03-18
  *               Updated formatting of commit messages because the journal now
  *               uses a different format. Also fixed processing of some special
- *               characters; curly braces and tildes were ignored.
+ *               characters; curly braces and tildes were ignored. Commit hashes
+ *               are now shortened if they don't fit on the first line.
  *               0.4    2021-03-01
  *               Fixed wrapping issues once and for all. Also fixed new problems
  *               that started occurring with wrapping when we started to adhere
@@ -320,6 +321,21 @@ foreach ($aCommits as $sDate => $aDailyCommits) {
             rtrim($aCommit['body']))))); // and rtrim() the last additional newline off.
         $sPrevProject = $aCommit['project'];
     }
+
+    // Cut lines where the commit header is very long due to a long branch name.
+    $sEmailBody = implode(
+        "\n",
+        array_map(
+            function ($sLine)
+            {
+                if (preg_match('/^---\\\texttt\{.+Commit /', $sLine) && strlen($sLine) > 120) {
+                    $sLine = substr($sLine, 0, 120);
+                }
+                return $sLine;
+            },
+            explode("\n", $sEmailBody)
+        )
+    );
 
     // Dump email contents in file.
     do {
