@@ -13,7 +13,8 @@
  *
  * Changelog   : 0.4.1  2024-03-18
  *               Updated formatting of commit messages because the journal now
- *               uses a different format.
+ *               uses a different format. Also fixed processing of some special
+ *               characters; curly braces were ignored.
  *               0.4    2021-03-01
  *               Fixed wrapping issues once and for all. Also fixed new problems
  *               that started occurring with wrapping when we started to adhere
@@ -314,7 +315,9 @@ foreach ($aCommits as $sDate => $aDailyCommits) {
                 '[EIW][A-Z]{4,})\b/', '\\texttt{$1}',
             // Quote variable names, file names, function names, branch names, and custom column names.
             preg_replace('/(\$[^ ,.]+|[^ ,]+(\.json|\.php|\.png|\.txt|\.yml|\(\))|\'(plus|master|[a-z]+\/[^\']+)\'|[^ ,.]+[\/_][^ ,.]+)/', '\\texttt{$1}',
-            rtrim($aCommit['body'])))); // and rtrim() the last additional newline off.
+            // Handle curly braces first, before we add them ourselves.
+            str_replace(array('{', '}'), array('\{', '\}'),
+            rtrim($aCommit['body']))))); // and rtrim() the last additional newline off.
         $sPrevProject = $aCommit['project'];
     }
 
