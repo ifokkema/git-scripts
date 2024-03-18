@@ -6,17 +6,18 @@
  *
  * Created     : 2019-09-02
  * Modified    : 2024-03-18
- * Version     : 0.4.1
+ * Version     : 0.5
  *
  * Purpose     : Formats commit messages into short LaTeX notes to be included
  *               in the daily reports.
  *
- * Changelog   : 0.4.1  2024-03-18
+ * Changelog   : 0.5    2024-03-18
  *               Updated formatting of commit messages because the journal now
  *               uses a different format. Also fixed processing of some special
  *               characters; curly braces and tildes were ignored. Commit hashes
  *               are now shortened if they don't fit on the first line, and the
- *               wrapping of the commit lines is fixed.
+ *               wrapping of the commit lines is fixed. Variables, paths, and
+ *               branch names are recognized in a better, more accurate way.
  *               0.4    2021-03-01
  *               Fixed wrapping issues once and for all. Also fixed new problems
  *               that started occurring with wrapping when we started to adhere
@@ -44,7 +45,7 @@ if (isset($_SERVER['HTTP_HOST'])) {
 // Default settings.
 $_CONFIG = array(
     'name' => 'Commit reporter',
-    'version' => '0.4.1',
+    'version' => '0.5',
 );
 
 // Exit codes.
@@ -316,7 +317,7 @@ foreach ($aCommits as $sDate => $aDailyCommits) {
                 'ACTION|GET|HEAD|POST|' .
                 '[EIW][A-Z]{4,})\b/', '\\texttt{$1}',
             // Quote variable names, file names, function names, branch names, and custom column names.
-            preg_replace('/(\$[^ ,.]+|[^ ,]+(\.json|\.php|\.png|\.txt|\.yml|\(\))|\'(plus|master|[a-z]+\/[^\']+)\'|[^ ,.]+[\/_][^ ,.]+)/', '\\texttt{$1}',
+            preg_replace('/(\$[A-Za-z0-9]+|[^ ,]+(\.json|\.php|\.png|\.txt|\.yml|\(\))|\'(plus|master|[a-z]+\/[^\']+)\'|\b[A-Za-z0-9._-]+[\/_][A-Za-z0-9._-]+\b)/', '\\texttt{$1}',
             // Handle curly braces first, before we add them ourselves.
             str_replace(array('{', '}'), array('\{', '\}'),
             rtrim($aCommit['body']))))); // and rtrim() the last additional newline off.
