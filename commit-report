@@ -14,7 +14,7 @@
  * Changelog   : 0.4.1  2024-03-18
  *               Updated formatting of commit messages because the journal now
  *               uses a different format. Also fixed processing of some special
- *               characters; curly braces were ignored.
+ *               characters; curly braces and tildes were ignored.
  *               0.4    2021-03-01
  *               Fixed wrapping issues once and for all. Also fixed new problems
  *               that started occurring with wrapping when we started to adhere
@@ -308,7 +308,7 @@ foreach ($aCommits as $sDate => $aDailyCommits) {
             ($sPrevProject != $aCommit['project']? (!$sEmailBody? '' : "\n\n") : '\\par' . "\n") .
             '---\\texttt{\\,\\textbf{Commit {\tiny(\#' . str_pad($nCounter, 3, '0', STR_PAD_LEFT) . ')} ' . str_replace('_', '\_', $aCommit['project'] . ' ' . $aCommit['branch']) . '}}: % ' . $aCommit['id'] . "\n" .
             // Prevent LaTeX errors by escaping troublesome chars.
-            str_replace(array('_', '#', '$', '%', '&', '^'), array('\_', '\#', '\$', '\%', '\&', '\^{}'),
+            str_replace(array('_', '#', '$', '%', '&', '^', '~'), array('\_', '\#', '\$', '\%', '\&', '\^{}', '$\sim$'),
             // Also quote certain abbreviations.
             preg_replace('/\b(NULL|SELECT|FROM|INNER JOIN|OUTER JOIN|WHERE|GROUP BY|HAVING|ORDER BY|LIMIT|SIGNED|UNSIGNED|FLOAT|TEXT|(TINY|SMALL|MEDIUM|BIG)?INT|' .
                 'ACTION|GET|HEAD|POST|' .
