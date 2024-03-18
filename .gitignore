@@ -1,4 +1,4 @@
 .idea
 commits.log
-commits.20??.log
+commits.*.log
 status.log
