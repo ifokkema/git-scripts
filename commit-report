@@ -15,7 +15,8 @@
  *               Updated formatting of commit messages because the journal now
  *               uses a different format. Also fixed processing of some special
  *               characters; curly braces and tildes were ignored. Commit hashes
- *               are now shortened if they don't fit on the first line.
+ *               are now shortened if they don't fit on the first line, and the
+ *               wrapping of the commit lines is fixed.
  *               0.4    2021-03-01
  *               Fixed wrapping issues once and for all. Also fixed new problems
  *               that started occurring with wrapping when we started to adhere
@@ -347,13 +348,17 @@ foreach ($aCommits as $sDate => $aDailyCommits) {
     //  locations. Too early, or too late. No clue what it's trying to do.
     // Now we hacked around this a bit by wrapping first, and indenting after.
     file_put_contents($sTempFile,
-        str_replace(
-            "\n    ---",
-            "\n---",
+        // This, however, wrapped the commit line too early.
+        preg_replace(
+            '/%\n    ([a-f0-9]+)\n/',
+            '% $1' . "\n",
             str_replace(
-                "\n",
-                "\n    ",
-                wordwrap($sEmailBody, 116, "\n"))));
+                "\n    ---",
+                "\n---",
+                str_replace(
+                    "\n",
+                    "\n    ",
+                    wordwrap($sEmailBody, 116, "\n")))));
 
     // Send the email.
     sort($aProjects);
