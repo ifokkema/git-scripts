@@ -5,13 +5,16 @@
  * COMMIT REPORTER
  *
  * Created     : 2019-09-02
- * Modified    : 2022-11-18
- * Version     : 0.4.0
+ * Modified    : 2024-03-18
+ * Version     : 0.4.1
  *
  * Purpose     : Formats commit messages into short LaTeX notes to be included
  *               in the daily reports.
  *
- * Changelog   : 0.4    2021-03-01
+ * Changelog   : 0.4.1  2024-03-18
+ *               Updated formatting of commit messages because the journal now
+ *               uses a different format.
+ *               0.4    2021-03-01
  *               Fixed wrapping issues once and for all. Also fixed new problems
  *               that started occurring with wrapping when we started to adhere
  *               to better standards and our git editor started to wrap our
@@ -38,7 +41,7 @@ if (isset($_SERVER['HTTP_HOST'])) {
 // Default settings.
 $_CONFIG = array(
     'name' => 'Commit reporter',
-    'version' => '0.4.0',
+    'version' => '0.4.1',
 );
 
 // Exit codes.
@@ -301,8 +304,8 @@ foreach ($aCommits as $sDate => $aDailyCommits) {
         $aProjects[] = $aCommit['project'] . ':' . $aCommit['branch'];
         $aCommitIDs[] = substr($aCommit['id'], 0, 8); // Store the first 8 chars for the subject.
         $sEmailBody .=
-            ($sPrevProject != $aCommit['project']? (!$sEmailBody? '' : "\n\n") : '\\\\' . "\n") .
-            '---\\texttt{ \\textbf{Commit {\tiny(\#' . str_pad($nCounter, 3, '0', STR_PAD_LEFT) . ')} ' . str_replace('_', '\_', $aCommit['project'] . ' ' . $aCommit['branch']) . '}}: % ' . $aCommit['id'] . "\n" .
+            ($sPrevProject != $aCommit['project']? (!$sEmailBody? '' : "\n\n") : '\\par' . "\n") .
+            '---\\texttt{\\,\\textbf{Commit {\tiny(\#' . str_pad($nCounter, 3, '0', STR_PAD_LEFT) . ')} ' . str_replace('_', '\_', $aCommit['project'] . ' ' . $aCommit['branch']) . '}}: % ' . $aCommit['id'] . "\n" .
             // Prevent LaTeX errors by escaping troublesome chars.
             str_replace(array('_', '#', '$', '%', '&', '^'), array('\_', '\#', '\$', '\%', '\&', '\^{}'),
             // Also quote certain abbreviations.
