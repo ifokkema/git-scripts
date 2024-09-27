@@ -1,0 +1,26 @@
+#!/bin/bash
+#
+# This script is called by "git commit" with no arguments so I can verify what
+#  is about to be committed. When exiting with anything other than 0, the commit
+#  is aborted. Note that this script is not run when running "git merge".
+
+PROJECT="$(basename "$(git rev-parse --show-toplevel)")";
+BRANCH="$(git symbolic-ref --short HEAD 2> /dev/null)";
+
+if [[ "$BRANCH" == "master" || "$BRANCH" == "main" ]];
+then
+    # List all projects here where I *ALLOW* myself to commit directly in main/master.
+    # That's a safer and more sane method than creating a list of disallowed projects.
+    # Using a grep because that's just easier than writing a lot of ORs.
+    if [ ! "$(echo "$PROJECT" | grep -E "^(barend-botje|caches|external_view|FFB_portal|git-scripts|LSDB_list|server-scripts|thesis|varcache|VKGL_export|VKGL_import|www.lovd.nl)$")" ]
+    then
+        echo "--------------------------------------------------";
+        echo " You are prohibited to commit in ${BRANCH}.";
+        echo " Create a new branch instead, and commit there.";
+        echo " Otherwise, suppress this message by adding";
+        echo "  the project name to the pre-commit hook:";
+        echo " ${0}";
+        echo "--------------------------------------------------";
+        exit 1;
+    fi;
+fi;
