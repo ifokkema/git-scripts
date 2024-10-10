@@ -11,7 +11,7 @@ if [[ $PROJECT == 'etc' ]];
 then
     # This is the etckeeper project. Don't log this.
     exit 0;
-elif [[ $PROJECT == 'FortySecondsCV' || $PROJECT == 'epoxytips.nl' || $PROJECT == 'oceandreamworlds.nl' || $PROJECT == 'marina-ivo.wedding' ]];
+elif [[ $PROJECT == 'FortySecondsCV' || $PROJECT == 'epoxytips.nl' || $PROJECT == 'oceandreamworlds.nl' || $PROJECT == 'marina-ivo.wedding' || $PROJECT == 'finances' ]];
 then
     FILEOUT="$(dirname "${0}")/../commits.private.log";
 fi;

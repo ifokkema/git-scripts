@@ -12,7 +12,7 @@ then
     # List all projects here where I *ALLOW* myself to commit directly in main/master.
     # That's a safer and more sane method than creating a list of disallowed projects.
     # Using a grep because that's just easier than writing a lot of ORs.
-    if [ ! "$(echo "$PROJECT" | grep -E "^(barend-botje|caches|external_view|FFB_portal|git-scripts|LSDB_list|server-scripts|thesis|varcache|VKGL_export|VKGL_import|www.lovd.nl)$")" ]
+    if [ ! "$(echo "$PROJECT" | grep -E "^(barend-botje|caches|external_view|FFB_portal|finances|git-scripts|LSDB_list|server-scripts|thesis|varcache|VKGL_export|VKGL_import|www.lovd.nl)$")" ]
     then
         echo "--------------------------------------------------";
         echo " You are prohibited to commit in ${BRANCH}.";
